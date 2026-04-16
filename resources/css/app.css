@@ -133,6 +133,15 @@
 }
 
 @layer base {
+    :root {
+        --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    }
+
+    h1, h2, h3, .font-black {
+        letter-spacing: -0.04em;
+        line-height: 0.9;
+    }
+
     * {
         @apply border-border;
     }
@@ -140,4 +149,10 @@
     body {
         @apply bg-background text-foreground;
     }
+}
+
+.text-editorial-hero {
+    font-size: clamp(4rem, 15vw, 12rem);
+    font-weight: 900;
+    text-transform: uppercase;
 }
