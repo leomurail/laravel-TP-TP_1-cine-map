@@ -1,18 +1,9 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { Button } from '@/components/ui/button';
+import { MapPin } from 'lucide-react';
 import LocationController from '@/actions/App/Http/Controllers/LocationController';
+import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
 import type { Auth } from '@/types';
-
-interface Film {
-    id: number;
-    title: string;
-}
-
-interface User {
-    id: number;
-    name: string;
-}
 
 interface Location {
     id: number;
@@ -20,76 +11,50 @@ interface Location {
     city: string;
     country: string;
     user_id: number;
-    film: Film;
-    user: User;
+    film: { id: number; title: string };
+    user: { name: string };
 }
 
-interface Props {
-    locations: Location[];
-}
-
-export default function Index({ locations }: Props) {
+export default function Index({ locations }: { locations: Location[] }) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
-    const canEdit = (location: Location) => {
-        return auth.user.is_admin || auth.user.id === location.user_id;
-    };
-
     return (
-        <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }]}>
-            <Head title="Emplacements" />
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Emplacements de tournage</h1>
-                    <Button asChild>
-                        <Link href={LocationController.create().url}>Ajouter un emplacement</Link>
-                    </Button>
-                </div>
+        <AppLayout breadcrumbs={[{ title: 'Lieux', href: LocationController.index().url }]}>
+            <Head title="Exploration des lieux" />
+            <div className="p-8 max-w-7xl mx-auto font-sans">
+                <header className="mb-16">
+                    <h1 className="text-7xl font-black uppercase mb-4 tracking-tighter">Lieux</h1>
+                    <div className="flex justify-between items-end border-b border-neutral-200 dark:border-neutral-800 pb-4">
+                        <p className="text-neutral-500 font-mono uppercase tracking-widest text-xs">Film Location Registry</p>
+                        <Button variant="outline" className="rounded-none border-2 border-black dark:border-white font-black uppercase" asChild>
+                            <Link href={LocationController.create().url}>+ Partager</Link>
+                        </Button>
+                    </div>
+                </header>
 
-                <div className="bg-white dark:bg-neutral-900 shadow rounded-lg overflow-hidden">
-                    <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800">
-                        <thead className="bg-neutral-50 dark:bg-neutral-800">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Nom</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Film</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Ville</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Créé par</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                            {locations.map((loc) => (
-                                <tr key={loc.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{loc.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{loc.film.title}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{loc.city}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{loc.user.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                        <Link href={LocationController.show(loc.id).url} className="text-blue-600 hover:text-blue-900">Voir</Link>
-                                        {canEdit(loc) && (
-                                            <>
-                                                <Link href={LocationController.edit(loc.id).url} className="text-indigo-600 hover:text-indigo-900">Modifier</Link>
-                                                <Link 
-                                                    href={LocationController.destroy(loc.id).url} 
-                                                    method="delete" 
-                                                    as="button" 
-                                                    className="text-red-600 hover:text-red-900"
-                                                    onClick={() => confirm('Êtes-vous sûr ?')}
-                                                >
-                                                    Supprimer
-                                                </Link>
-                                            </>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {locations.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center text-neutral-500">Aucun emplacement trouvé.</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
+                    {locations.map((loc) => (
+                        <div key={loc.id} className="group flex flex-col md:flex-row gap-8 items-start border-l-4 border-transparent hover:border-rose-600 pl-6 transition-all">
+                            <div className="flex-1">
+                                <p className="text-rose-600 font-black text-xs uppercase tracking-tighter mb-2 text-balance">{loc.film.title}</p>
+                                <h2 className="text-4xl font-black uppercase tracking-tight leading-none mb-4 text-balance text-neutral-900 dark:text-neutral-100">
+                                    <Link href={LocationController.show(loc.id).url}>{loc.name}</Link>
+                                </h2>
+                                <div className="flex items-center gap-2 text-neutral-400 font-mono text-xs uppercase tracking-widest mb-6">
+                                    <MapPin size={14} />
+                                    <span>{loc.city}, {loc.country}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] font-mono uppercase text-neutral-500 border-t border-neutral-100 dark:border-neutral-900 pt-4">
+                                    <span>Added by {loc.user.name}</span>
+                                    {(auth.user.is_admin || auth.user.id === loc.user_id) && (
+                                        <div className="flex gap-4">
+                                            <Link href={LocationController.edit(loc.id).url} className="text-black dark:text-white font-black hover:text-rose-600 transition-colors">Edit</Link>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </AppLayout>
