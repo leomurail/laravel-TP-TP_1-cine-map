@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import type { Auth } from '@/types';
 
@@ -11,66 +12,50 @@ interface Film {
     synopsis: string;
 }
 
-interface Props {
-    films: Film[];
-}
-
-export default function Index({ films }: Props) {
+export default function Index({ films }: { films: Film[] }) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }]}>
-            <Head title="Films" />
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold">Liste des Films</h1>
-                    {auth.user.is_admin && (
-                        <Button asChild>
-                            <Link href={FilmController.create().url}>Ajouter un film</Link>
-                        </Button>
-                    )}
-                </div>
+        <AppLayout breadcrumbs={[{ title: 'Catalogue', href: FilmController.index().url }]}>
+            <Head title="Catalogue de Films" />
+            <div className="p-8 max-w-7xl mx-auto font-sans">
+                <header className="mb-16">
+                    <h1 className="text-7xl font-black uppercase mb-4 tracking-tighter">Catalogue</h1>
+                    <div className="flex justify-between items-end border-b border-neutral-200 dark:border-neutral-800 pb-4">
+                        <p className="text-neutral-500 font-mono text-xs uppercase tracking-widest text-balance">Total {films.length} titres</p>
+                        {auth.user.is_admin && (
+                            <Button variant="outline" className="rounded-none border-2 border-black dark:border-white font-black uppercase" asChild>
+                                <Link href={FilmController.create().url}>+ Ajouter</Link>
+                            </Button>
+                        )}
+                    </div>
+                </header>
 
-                <div className="bg-white dark:bg-neutral-900 shadow rounded-lg overflow-hidden">
-                    <table className="min-w-full divide-y divide-neutral-200 dark:divide-neutral-800">
-                        <thead className="bg-neutral-50 dark:bg-neutral-800">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Titre</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Année</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                            {films.map((film) => (
-                                <tr key={film.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">{film.title}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{film.release_year}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                                        <Link href={FilmController.show(film.id).url} className="text-blue-600 hover:text-blue-900">Voir</Link>
-                                        {auth.user.is_admin && (
-                                            <>
-                                                <Link href={FilmController.edit(film.id).url} className="text-indigo-600 hover:text-indigo-900">Modifier</Link>
-                                                <Link 
-                                                    href={FilmController.destroy(film.id).url} 
-                                                    method="delete" 
-                                                    as="button" 
-                                                    className="text-red-600 hover:text-red-900"
-                                                    onClick={() => confirm('Êtes-vous sûr ?')}
-                                                >
-                                                    Supprimer
-                                                </Link>
-                                            </>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {films.length === 0 && (
-                                <tr>
-                                    <td colSpan={3} className="px-6 py-4 text-center text-neutral-500">Aucun film trouvé.</td>
-                                </tr>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8">
+                    {films.map((film) => (
+                        <div key={film.id} className="group relative flex flex-col">
+                            <div className="aspect-[4/5] bg-neutral-100 dark:bg-neutral-900 mb-6 overflow-hidden transition-all group-hover:bg-neutral-200 dark:group-hover:bg-neutral-800 flex items-center justify-center">
+                                <span className="text-8xl font-black text-neutral-200 dark:text-neutral-800 transition-transform group-hover:scale-110">
+                                    {film.title.charAt(0)}
+                                </span>
+                            </div>
+                            <Badge variant="secondary" className="w-fit mb-2 font-mono rounded-none">{film.release_year}</Badge>
+                            <h2 className="text-3xl font-black uppercase mb-3 leading-none tracking-tight">
+                                <Link href={FilmController.show(film.id).url} className="hover:text-rose-600 transition-colors text-balance">
+                                    {film.title}
+                                </Link>
+                            </h2>
+                            <p className="text-neutral-500 line-clamp-2 text-sm leading-relaxed mb-6 font-light italic text-balance">
+                                {film.synopsis}
+                            </p>
+                            {auth.user.is_admin && (
+                                <div className="mt-auto flex gap-4 border-t border-neutral-100 dark:border-neutral-900 pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Link href={FilmController.edit(film.id).url} className="text-xs uppercase font-black tracking-widest hover:text-rose-600">Éditer</Link>
+                                    <Link href={FilmController.destroy(film.id).url} method="delete" as="button" className="text-xs uppercase font-black tracking-widest text-neutral-400 hover:text-red-600">Supprimer</Link>
+                                </div>
                             )}
-                        </tbody>
-                    </table>
+                        </div>
+                    ))}
                 </div>
             </div>
         </AppLayout>
