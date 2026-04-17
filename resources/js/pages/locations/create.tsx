@@ -31,25 +31,36 @@ export default function Create({ films }: Props) {
     return (
         <>
             <Head title="Ajouter un emplacement" />
-            <div className="p-6 max-w-2xl mx-auto">
-                <h1 className="text-2xl font-bold mb-6">Nouvel emplacement de tournage</h1>
+            <div className="mx-auto max-w-2xl p-6">
+                <h1 className="mb-6 text-2xl font-bold">
+                    Nouvel emplacement de tournage
+                </h1>
 
-                <form onSubmit={submit} className="space-y-4 bg-white dark:bg-neutral-900 p-6 shadow rounded-lg">
+                <form
+                    onSubmit={submit}
+                    className="space-y-4 rounded-lg bg-white p-6 shadow dark:bg-neutral-900"
+                >
                     <div>
                         <Label htmlFor="film_id">Film</Label>
                         <select
                             id="film_id"
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             value={data.film_id}
                             onChange={(e) => setData('film_id', e.target.value)}
                             required
                         >
                             <option value="">Sélectionnez un film</option>
                             {films.map((film) => (
-                                <option key={film.id} value={film.id}>{film.title}</option>
+                                <option key={film.id} value={film.id}>
+                                    {film.title}
+                                </option>
                             ))}
                         </select>
-                        {errors.film_id && <p className="text-red-500 text-sm mt-1">{errors.film_id}</p>}
+                        {errors.film_id && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {errors.film_id}
+                            </p>
+                        )}
                     </div>
 
                     <div>
@@ -60,7 +71,11 @@ export default function Create({ films }: Props) {
                             onChange={(e) => setData('name', e.target.value)}
                             required
                         />
-                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                        {errors.name && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {errors.name}
+                            </p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -69,20 +84,32 @@ export default function Create({ films }: Props) {
                             <Input
                                 id="city"
                                 value={data.city}
-                                onChange={(e) => setData('city', e.target.value)}
+                                onChange={(e) =>
+                                    setData('city', e.target.value)
+                                }
                                 required
                             />
-                            {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+                            {errors.city && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.city}
+                                </p>
+                            )}
                         </div>
                         <div>
                             <Label htmlFor="country">Pays</Label>
                             <Input
                                 id="country"
                                 value={data.country}
-                                onChange={(e) => setData('country', e.target.value)}
+                                onChange={(e) =>
+                                    setData('country', e.target.value)
+                                }
                                 required
                             />
-                            {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country}</p>}
+                            {errors.country && (
+                                <p className="mt-1 text-sm text-red-500">
+                                    {errors.country}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -90,16 +117,24 @@ export default function Create({ films }: Props) {
                         <Label htmlFor="description">Description</Label>
                         <textarea
                             id="description"
-                            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                             value={data.description}
-                            onChange={(e) => setData('description', e.target.value)}
+                            onChange={(e) =>
+                                setData('description', e.target.value)
+                            }
                             required
                         />
-                        {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                        {errors.description && (
+                            <p className="mt-1 text-sm text-red-500">
+                                {errors.description}
+                            </p>
+                        )}
                     </div>
 
                     <div className="flex items-center justify-end">
-                        <Button disabled={processing}>Créer l'emplacement</Button>
+                        <Button disabled={processing}>
+                            Créer l'emplacement
+                        </Button>
                     </div>
                 </form>
             </div>
@@ -108,7 +143,12 @@ export default function Create({ films }: Props) {
 }
 
 Create.layout = (page: React.ReactNode) => (
-    <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: 'Ajouter', href: LocationController.create().url }]}>
+    <AppLayout
+        breadcrumbs={[
+            { title: 'Emplacements', href: LocationController.index().url },
+            { title: 'Ajouter', href: LocationController.create().url },
+        ]}
+    >
         {page}
     </AppLayout>
 );

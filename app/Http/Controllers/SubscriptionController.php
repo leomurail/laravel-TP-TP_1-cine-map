@@ -16,6 +16,15 @@ class SubscriptionController extends Controller
 
     public function checkout(Request $request)
     {
+        if (! config('cashier.secret')) {
+            return back()->with('error', 'Stripe API keys are not configured. Please add STRIPE_KEY and STRIPE_SECRET to your .env file.');
+        }
+
+        if (config('cashier.price_id', 'price_premium_api') === 'price_premium_api') {
+            // Optional: check if the price ID is still the placeholder
+            // return back()->with('error', 'Please configure a valid Stripe Price ID in your controller or .env file.');
+        }
+
         return $request->user()
             ->newSubscription('default', 'price_premium_api') // Placeholder price ID
             ->checkout([

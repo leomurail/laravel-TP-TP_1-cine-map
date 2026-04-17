@@ -11,7 +11,9 @@ export default function AppLayout({
     breadcrumbs?: BreadcrumbItem[];
     children: React.ReactNode;
 }) {
-    const { flash } = usePage<{ flash: { success: string | null; error: string | null } }>().props;
+    const { flash } = usePage<{
+        flash: { success: string | null; error: string | null };
+    }>().props;
 
     useEffect(() => {
         if (flash.success) {

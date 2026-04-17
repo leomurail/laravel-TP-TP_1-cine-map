@@ -137,7 +137,10 @@
         --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
     }
 
-    h1, h2, h3, .font-black {
+    h1,
+    h2,
+    h3,
+    .font-black {
         letter-spacing: -0.04em;
         line-height: 0.9;
     }

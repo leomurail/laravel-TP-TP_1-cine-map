@@ -1,8 +1,8 @@
+const path = require("path");
 const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
 const sqlite3 = require("sqlite3").verbose();
-const path = require("path");
 
 const dbPath = path.join(__dirname, "../database/database.sqlite");
 const db = new sqlite3.Database(dbPath);
@@ -65,6 +65,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
     case "get_locations_for_film": {
       const film_id = request.params.arguments.film_id;
+
       return new Promise((resolve, reject) => {
         db.all(
           "SELECT id, name, city, country, description, upvotes_count FROM locations WHERE film_id = ?",

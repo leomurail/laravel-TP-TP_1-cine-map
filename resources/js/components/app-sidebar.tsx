@@ -1,5 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, CreditCard, Film, FolderGit2, LayoutGrid, MapPin } from 'lucide-react';
+import {
+    BookOpen,
+    CreditCard,
+    Film,
+    FolderGit2,
+    LayoutGrid,
+    MapPin,
+} from 'lucide-react';
 import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import LocationController from '@/actions/App/Http/Controllers/LocationController';
 import SubscriptionController from '@/actions/App/Http/Controllers/SubscriptionController';

@@ -34,27 +34,46 @@ export default function Show({ film }: Props) {
         <>
             <Head title={film.title} />
             <div className="p-6">
-                <div className="bg-white dark:bg-neutral-900 shadow rounded-lg p-6 mb-6">
-                    <h1 className="text-3xl font-bold mb-2">{film.title} ({film.release_year})</h1>
-                    <p className="text-neutral-600 dark:text-neutral-400 italic mb-4">Synopsis :</p>
+                <div className="mb-6 rounded-lg bg-white p-6 shadow dark:bg-neutral-900">
+                    <h1 className="mb-2 text-3xl font-bold">
+                        {film.title} ({film.release_year})
+                    </h1>
+                    <p className="mb-4 text-neutral-600 italic dark:text-neutral-400">
+                        Synopsis :
+                    </p>
                     <p className="text-lg leading-relaxed">{film.synopsis}</p>
                 </div>
 
-                <h2 className="text-2xl font-bold mb-4">Emplacements de tournage ({film.locations.length})</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <h2 className="mb-4 text-2xl font-bold">
+                    Emplacements de tournage ({film.locations.length})
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {film.locations.map((location) => (
-                        <div key={location.id} className="bg-white dark:bg-neutral-900 shadow rounded-lg p-4 border border-neutral-200 dark:border-neutral-800">
-                            <h3 className="text-xl font-semibold mb-1">{location.name}</h3>
-                            <p className="text-sm text-neutral-500 mb-2">{location.city}, {location.country}</p>
-                            <p className="text-sm line-clamp-3 mb-3">{location.description}</p>
-                            <div className="flex justify-between items-center text-xs text-neutral-400">
+                        <div
+                            key={location.id}
+                            className="rounded-lg border border-neutral-200 bg-white p-4 shadow dark:border-neutral-800 dark:bg-neutral-900"
+                        >
+                            <h3 className="mb-1 text-xl font-semibold">
+                                {location.name}
+                            </h3>
+                            <p className="mb-2 text-sm text-neutral-500">
+                                {location.city}, {location.country}
+                            </p>
+                            <p className="mb-3 line-clamp-3 text-sm">
+                                {location.description}
+                            </p>
+                            <div className="flex items-center justify-between text-xs text-neutral-400">
                                 <span>Par {location.user.name}</span>
-                                <span className="font-bold">{location.upvotes_count} votes</span>
+                                <span className="font-bold">
+                                    {location.upvotes_count} votes
+                                </span>
                             </div>
                         </div>
                     ))}
                     {film.locations.length === 0 && (
-                        <p className="text-neutral-500 col-span-full italic">Aucun emplacement répertorié pour ce film.</p>
+                        <p className="col-span-full text-neutral-500 italic">
+                            Aucun emplacement répertorié pour ce film.
+                        </p>
                     )}
                 </div>
             </div>
@@ -63,7 +82,12 @@ export default function Show({ film }: Props) {
 }
 
 Show.layout = (page: React.ReactNode, { film }: Props) => (
-    <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: film.title, href: FilmController.show(film.id).url }]}>
+    <AppLayout
+        breadcrumbs={[
+            { title: 'Films', href: FilmController.index().url },
+            { title: film.title, href: FilmController.show(film.id).url },
+        ]}
+    >
         {page}
     </AppLayout>
 );

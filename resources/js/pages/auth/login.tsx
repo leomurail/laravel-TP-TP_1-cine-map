@@ -109,7 +109,9 @@ export default function Login({
                                 variant="outline"
                                 type="button"
                                 className="w-full"
-                                onClick={() => window.location.href = '/auth/github'}
+                                onClick={() =>
+                                    (window.location.href = '/auth/github')
+                                }
                             >
                                 <Github className="mr-2 h-4 w-4" />
                                 GitHub

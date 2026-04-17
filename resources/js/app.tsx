@@ -1,4 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -10,10 +12,36 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    layout: (name, page) => {
+    resolve: (name) =>
+        resolvePageComponent(
+            `./pages/${name}.tsx`,
+            import.meta.glob('./pages/**/*.tsx'),
+        ),
+    setup({ el, App, props }) {
+        const rootElement = (
+            <TooltipProvider delayDuration={0}>
+                <App {...props} />
+                <Toaster />
+            </TooltipProvider>
+        );
+
+        if (import.meta.env.DEV) {
+            createRoot(el).render(rootElement);
+
+            return;
+        }
+
+        hydrateRoot(el, rootElement);
+    },
+    layout: (name, page: any) => {
         // If the page defines its own functional layout, Inertia will use it.
         // We only provide a default layout if the page doesn't have one or uses an object (for breadcrumbs).
-        if (typeof page.default.layout === 'function' || Array.isArray(page.default.layout)) {
+        const pageComponent = page.default ?? page;
+
+        if (
+            typeof pageComponent.layout === 'function' ||
+            Array.isArray(pageComponent.layout)
+        ) {
             return null;
         }
 
@@ -29,14 +57,6 @@ createInertiaApp({
         }
     },
     strictMode: true,
-    withApp(app) {
-        return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
-        );
-    },
     progress: {
         color: '#4B5563',
     },
@@ -44,3 +64,5 @@ createInertiaApp({
 
 // This will set light / dark mode on load...
 initializeTheme();
+
+console.log('Inertia app starting...');

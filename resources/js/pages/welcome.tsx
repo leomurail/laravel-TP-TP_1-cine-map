@@ -8,36 +8,51 @@ export default function Welcome({ canRegister = true }) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
-        <div className="min-h-screen bg-white text-neutral-950 selection:bg-rose-500 selection:text-white dark:bg-neutral-950 dark:text-neutral-50 font-sans">
+        <div className="min-h-screen bg-white font-sans text-neutral-950 selection:bg-rose-500 selection:text-white dark:bg-neutral-950 dark:text-neutral-50">
             <Head title="CineMap — Discover Film Locations" />
-            
-            <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 mix-blend-difference">
-                <div className="text-xl font-black tracking-tighter uppercase text-white">CineMap</div>
-                <nav className="flex gap-8 text-sm font-medium text-white uppercase tracking-widest">
+
+            <header className="fixed top-0 right-0 left-0 z-50 flex items-center justify-between p-6 mix-blend-difference">
+                <div className="text-xl font-black tracking-tighter text-white uppercase">
+                    CineMap
+                </div>
+                <nav className="flex gap-8 text-sm font-medium tracking-widest text-white uppercase">
                     {auth.user ? (
                         <Link href={dashboard()}>Dashboard</Link>
                     ) : (
                         <>
                             <Link href={login()}>Log in</Link>
-                            {canRegister && <Link href={register()}>Register</Link>}
+                            {canRegister && (
+                                <Link href={register()}>Register</Link>
+                            )}
                         </>
                     )}
                 </nav>
             </header>
 
-            <main className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
+            <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
                 <h1 className="text-editorial-hero mb-4 leading-[0.8] tracking-tighter">
                     Cine<span className="text-rose-600">Map</span>
                 </h1>
-                <p className="max-w-xl text-xl md:text-2xl font-light text-neutral-500 dark:text-neutral-400 mb-12 leading-relaxed text-balance">
+                <p className="mb-12 max-w-xl text-xl leading-relaxed font-light text-balance text-neutral-500 md:text-2xl dark:text-neutral-400">
                     Explore legendary film locations. <br />
                     Share your discoveries with the world.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" className="rounded-none px-12 py-8 text-lg uppercase font-black tracking-widest" asChild>
-                        <Link href={FilmController.index().url}>Explore Films</Link>
+                <div className="flex flex-col gap-4 sm:flex-row">
+                    <Button
+                        size="lg"
+                        className="rounded-none px-12 py-8 text-lg font-black tracking-widest uppercase"
+                        asChild
+                    >
+                        <Link href={FilmController.index().url}>
+                            Explore Films
+                        </Link>
                     </Button>
-                    <Button variant="outline" size="lg" className="rounded-none px-12 py-8 text-lg uppercase font-black tracking-widest" asChild>
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        className="rounded-none px-12 py-8 text-lg font-black tracking-widest uppercase"
+                        asChild
+                    >
                         <Link href={register()}>Join Community</Link>
                     </Button>
                 </div>
