@@ -28,76 +28,87 @@ export default function Edit({ film }: Props) {
         put(FilmController.update(film.id).url);
     };
 
+    const inputClasses = "rounded-none border-2 border-black focus:border-rose-600 focus:ring-0 dark:border-white dark:bg-black dark:focus:border-rose-500 transition-colors";
+    const labelClasses = "font-mono text-[10px] uppercase tracking-widest text-neutral-500 mb-2 block";
+
     return (
         <>
             <Head title={`Modifier ${film.title}`} />
-            <div className="mx-auto max-w-2xl p-6">
-                <h1 className="mb-6 text-2xl font-bold">
-                    Modifier : {film.title}
-                </h1>
+            <div className="mx-auto max-w-2xl p-8">
+                <div className="border-2 border-black dark:border-white bg-white dark:bg-black rounded-none overflow-hidden">
+                    <header className="bg-neutral-100 dark:bg-neutral-900 border-b-2 border-black dark:border-white p-6">
+                        <h1 className="text-2xl font-black uppercase tracking-tighter">
+                            Modifier / {film.title}
+                        </h1>
+                    </header>
 
-                <form
-                    onSubmit={submit}
-                    className="space-y-4 rounded-lg bg-white p-6 shadow dark:bg-neutral-900"
-                >
-                    <div>
-                        <Label htmlFor="title">Titre</Label>
-                        <Input
-                            id="title"
-                            value={data.title}
-                            onChange={(e) => setData('title', e.target.value)}
-                            required
-                        />
-                        {errors.title && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {errors.title}
-                            </p>
-                        )}
-                    </div>
+                    <form onSubmit={submit} className="p-8 space-y-8">
+                        <div>
+                            <Label htmlFor="title" className={labelClasses}>Titre du Film</Label>
+                            <Input
+                                id="title"
+                                className={inputClasses}
+                                value={data.title}
+                                onChange={(e) => setData('title', e.target.value)}
+                                required
+                            />
+                            {errors.title && (
+                                <p className="mt-2 text-xs font-mono font-bold text-red-600 uppercase">
+                                    Error: {errors.title}
+                                </p>
+                            )}
+                        </div>
 
-                    <div>
-                        <Label htmlFor="release_year">Année de sortie</Label>
-                        <Input
-                            id="release_year"
-                            type="number"
-                            value={data.release_year}
-                            onChange={(e) =>
-                                setData(
-                                    'release_year',
-                                    parseInt(e.target.value),
-                                )
-                            }
-                            required
-                        />
-                        {errors.release_year && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {errors.release_year}
-                            </p>
-                        )}
-                    </div>
+                        <div>
+                            <Label htmlFor="release_year" className={labelClasses}>Année de Sortie</Label>
+                            <Input
+                                id="release_year"
+                                type="number"
+                                className={inputClasses}
+                                value={data.release_year}
+                                onChange={(e) =>
+                                    setData(
+                                        'release_year',
+                                        parseInt(e.target.value),
+                                    )
+                                }
+                                required
+                            />
+                            {errors.release_year && (
+                                <p className="mt-2 text-xs font-mono font-bold text-red-600 uppercase">
+                                    Error: {errors.release_year}
+                                </p>
+                            )}
+                        </div>
 
-                    <div>
-                        <Label htmlFor="synopsis">Synopsis</Label>
-                        <textarea
-                            id="synopsis"
-                            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                            value={data.synopsis}
-                            onChange={(e) =>
-                                setData('synopsis', e.target.value)
-                            }
-                            required
-                        />
-                        {errors.synopsis && (
-                            <p className="mt-1 text-sm text-red-500">
-                                {errors.synopsis}
-                            </p>
-                        )}
-                    </div>
+                        <div>
+                            <Label htmlFor="synopsis" className={labelClasses}>Synopsis / Résumé</Label>
+                            <textarea
+                                id="synopsis"
+                                className={`flex min-h-[150px] w-full bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${inputClasses}`}
+                                value={data.synopsis}
+                                onChange={(e) =>
+                                    setData('synopsis', e.target.value)
+                                }
+                                required
+                            />
+                            {errors.synopsis && (
+                                <p className="mt-2 text-xs font-mono font-bold text-red-600 uppercase">
+                                    Error: {errors.synopsis}
+                                </p>
+                            )}
+                        </div>
 
-                    <div className="flex items-center justify-end">
-                        <Button disabled={processing}>Mettre à jour</Button>
-                    </div>
-                </form>
+                        <div className="pt-4 border-t-2 border-black dark:border-white -mx-8 -mb-8">
+                            <Button 
+                                disabled={processing} 
+                                className="w-full h-16 rounded-none bg-black hover:bg-rose-600 text-white dark:bg-white dark:text-black dark:hover:bg-rose-500 font-black text-xl uppercase transition-colors"
+                            >
+                                Mettre à jour
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </>
     );
