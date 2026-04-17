@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +34,7 @@ export default function Edit({ film }: Props) {
     return (
         <>
             <Head title={`Modifier ${film.title}`} />
-            <div className="mx-auto max-w-2xl p-8">
+            <div className="mx-auto max-w-4xl p-8">
                 <div className="border-2 border-black dark:border-white bg-white dark:bg-black rounded-none overflow-hidden">
                     <header className="bg-neutral-100 dark:bg-neutral-900 border-b-2 border-black dark:border-white p-6">
                         <h1 className="text-2xl font-black uppercase tracking-tighter">
@@ -114,13 +114,21 @@ export default function Edit({ film }: Props) {
     );
 }
 
-Edit.layout = (page: React.ReactNode, { film }: Props) => (
-    <AppLayout
-        breadcrumbs={[
-            { title: 'Films', href: FilmController.index().url },
-            { title: 'Modifier', href: FilmController.edit(film.id).url },
-        ]}
-    >
-        {page}
-    </AppLayout>
-);
+const EditLayout = ({ children }: { children: React.ReactNode }) => {
+    const { film } = usePage<Props>().props;
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Films', href: FilmController.index().url },
+                {
+                    title: 'Modifier',
+                    href: FilmController.edit(film.id).url,
+                },
+            ]}
+        >
+            {children}
+        </AppLayout>
+    );
+};
+
+Edit.layout = (page: React.ReactNode) => <EditLayout>{page}</EditLayout>;

@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import AppLayout from '@/layouts/app-layout';
 
@@ -81,13 +81,21 @@ export default function Show({ film }: Props) {
     );
 }
 
-Show.layout = (page: React.ReactNode, { film }: Props) => (
-    <AppLayout
-        breadcrumbs={[
-            { title: 'Films', href: FilmController.index().url },
-            { title: film.title, href: FilmController.show(film.id).url },
-        ]}
-    >
-        {page}
-    </AppLayout>
-);
+const ShowLayout = ({ children }: { children: React.ReactNode }) => {
+    const { film } = usePage<Props>().props;
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Films', href: FilmController.index().url },
+                {
+                    title: film.title,
+                    href: FilmController.show(film.id).url,
+                },
+            ]}
+        >
+            {children}
+        </AppLayout>
+    );
+};
+
+Show.layout = (page: React.ReactNode) => <ShowLayout>{page}</ShowLayout>;

@@ -1,42 +1,59 @@
-# CineMap - Démarche Technique
+# CineMap - Documentation Technique & Choix d'Implémentation
 
-Ce document détaille les choix techniques et la démarche suivis pour le TP CineMap.
+Ce document documente les changements et les choix techniques effectués pour CineMap par rapport au `brief.md`.
 
-## Étape 1 : Authentification
-L'authentification a été mise en place en utilisant le **Starter Kit Laravel React** (Inertia + Fortify).
+## 1. Stack Technique
+Le brief laissait libre le choix de l'interface. J'ai opté pour une stack moderne et performante :
+- **Laravel 11** comme framework principal.
+- **Inertia.js avec React 19** pour une expérience utilisateur fluide sans sacrifier la puissance de Laravel.
+- **Tailwind CSS v4** pour un design industriel et épuré.
 
-## Étape 2 : Les 2 CRUDs Métier (Film & Location)
-- **Film** : Relation `hasMany` vers `Location`.
-- **Location** : Lié à un `Film` et à un `User`. Validé via FormRequests.
+## 2. Écarts et Améliorations par rapport au Brief
 
-## Étape 3 : Middleware Administrateur et Sécurité
-- **Middleware `admin`** : Protège les routes de création/édition de films.
-- **Policies** : `LocationPolicy` restreint l'édition des lieux à leurs auteurs ou aux admins.
+### Authentification (Étape 1)
+- **Implémentation** : Utilisation d'un Starter Kit basé sur **Fortify** pour une gestion robuste de l'auth.
+- **Ajout** : Gestion complète du profil utilisateur (changement de mot de passe, suppression de compte).
 
-## Étape 4 : Système d'Upvotes (Queues & Jobs)
-- **Logique** : Un utilisateur peut voter pour un lieu (table `location_votes` avec index unique).
-- **Asynchronisme** : Le vote déclenche le Job `UpdateLocationUpvotes`. Le calcul du total est fait en arrière-plan pour ne pas bloquer l'utilisateur.
-- **Queue** : Utilisation du driver `database` (configuré par défaut dans le starter).
+### Les CRUDs Métier (Étape 2)
+- **Fidélité** : Les modèles `Film` et `Location` respectent exactement les champs conseillés.
+- **UX** : Les formulaires ont été stylisés avec une approche "brutaliste/industrielle" pour une identité visuelle forte.
 
-## Étape 5 : Nettoyage Automatique (Artisan & Scheduler)
-- **Commande** : `app:cleanup-locations` supprime les lieux de plus de 14 jours ayant moins de 2 upvotes.
-- **Planification** : Enregistrée dans `routes/console.php` pour s'exécuter quotidiennement.
+### Middleware Administrateur (Étape 3)
+- **Implémentation** : Un middleware `AdminMiddleware` protège les routes sensibles.
+- **Policies** : Utilisation des `Policies` Laravel pour une gestion fine des droits (ex: un utilisateur ne peut éditer que ses propres lieux).
 
-## Étape 6 : Formatage (Laravel Pint)
-- Utilisation de **Pint** pour garantir un code propre et conforme aux standards PSR-12.
+### Système d'Upvotes & Queues (Étape 4)
+- **Flux** : Enregistrement immédiat du vote dans la table `location_votes` (index unique user/location).
+- **Asynchronisme** : Le job `UpdateLocationUpvotes` est dispatché sur la queue `database`. Il effectue un `COUNT` précis pour mettre à jour le champ `upvotes_count` du modèle `Location`.
 
-## Étape 7 : Connexion Sociale (OAuth)
-- **Socialite** : Intégration de GitHub.
-- **Flux** : Les utilisateurs peuvent se connecter sans mot de passe. Si le compte n'existe pas, il est créé à la volée à partir des données GitHub.
+### Automatisation (Étape 5)
+- **Commande** : `php artisan app:cleanup-locations`.
+- **Logique** : Suppression stricte des lieux > 14 jours ET < 2 upvotes.
+- **Planification** : Intégrée dans `routes/console.php`.
 
-## Étape 8 : Abonnement Stripe & API Premium
-- **Cashier** : Gestion des abonnements Stripe.
-- **JWT Auth** : Sécurisation de l'API sans sessions. Le token est requis pour chaque requête.
-- **Middleware `subscribed`** : Vérifie en temps réel si l'utilisateur possède un abonnement actif avant de livrer les données JSON.
+### Qualité (Étape 6)
+- **Laravel Pint** : Utilisé pour harmoniser le style de code.
 
-## Étape 9 : MCP Server (AI Integration)
-- **Node.js** : Un serveur minimal utilisant le protocole MCP permet à une IA d'interroger la base SQLite.
-- **Outils** : `list_films` et `get_locations_for_film` exposent les données essentielles en lecture seule.
+### Connexion Sociale (Étape 7)
+- **Fournisseur** : GitHub via **Laravel Socialite**.
+- **Gestion des conflits** : Si un utilisateur GitHub possède le même e-mail qu'un utilisateur classique, les comptes sont liés de manière sécurisée.
 
-## Conclusion
-L'application CineMap est désormais complète, couvrant tous les aspects demandés : de l'authentification robuste au système de paiement, en passant par l'intégration moderne pour les IA.
+### Stripe & API Premium (Étape 8)
+- **Stripe** : Intégration de **Laravel Cashier** pour gérer les abonnements.
+- **Middleware API** : Un middleware personnalisé vérifie à la fois la validité du token JWT et l'état de l'abonnement Stripe de l'utilisateur.
+- **JWT** : Utilisation d'une implémentation JWT sur mesure pour l'API.
+
+### Serveur MCP (Étape 9)
+- **Choix Technique** : Implémentation via un serveur **Node.js** séparé (dans `/mcp-server`).
+- **Pourquoi ?** : Utilisation du SDK officiel d'Anthropic pour garantir une compatibilité parfaite avec les clients IA (Claude, Gemini CLI).
+- **Fonctionnement** : Le serveur lit directement la base SQLite partagée avec Laravel pour exposer les outils `list_films` et `get_locations_for_film`.
+
+## 3. Dépendances Clés ajoutées
+- `laravel/socialite` : Pour l'auth GitHub.
+- `laravel/cashier` : Pour l'intégration Stripe.
+- `concurrently` : Pour lancer plusieurs services simultanément via `make dev`.
+- `@modelcontextprotocol/sdk` : Pour le serveur MCP.
+
+## 4. Instructions de Maintenance
+Toutes les commandes de maintenance (migration, linting, tests) sont regroupées dans le `Makefile`.
+L'application a été formatée et testée pour garantir une stabilité maximale.

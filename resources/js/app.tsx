@@ -34,8 +34,6 @@ createInertiaApp({
         hydrateRoot(el, rootElement);
     },
     layout: (name, page: any) => {
-        // If the page defines its own functional layout, Inertia will use it.
-        // We only provide a default layout if the page doesn't have one or uses an object (for breadcrumbs).
         const pageComponent = page.default ?? page;
 
         if (
@@ -45,15 +43,21 @@ createInertiaApp({
             return null;
         }
 
+        const layoutProps = typeof pageComponent.layout === 'object' ? pageComponent.layout : {};
+
         switch (true) {
             case name === 'welcome':
                 return null;
             case name.startsWith('auth/'):
-                return AuthLayout;
+                return (props: any) => <AuthLayout {...layoutProps} {...props} />;
             case name.startsWith('settings/'):
-                return [AppLayout, SettingsLayout];
+                return (props: any) => (
+                    <AppLayout {...layoutProps} {...props}>
+                        <SettingsLayout {...props} />
+                    </AppLayout>
+                );
             default:
-                return AppLayout;
+                return (props: any) => <AppLayout {...layoutProps} {...props} />;
         }
     },
     strictMode: true,

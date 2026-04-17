@@ -120,16 +120,21 @@ export default function Show({ location }: Props) {
     );
 }
 
-Show.layout = (page: React.ReactNode, { location }: Props) => (
-    <AppLayout
-        breadcrumbs={[
-            { title: 'Emplacements', href: LocationController.index().url },
-            {
-                title: location.name,
-                href: LocationController.show(location.id).url,
-            },
-        ]}
-    >
-        {page}
-    </AppLayout>
-);
+const ShowLayout = ({ children }: { children: React.ReactNode }) => {
+    const { location } = usePage<Props>().props;
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Emplacements', href: LocationController.index().url },
+                {
+                    title: location.name,
+                    href: LocationController.show(location.id).url,
+                },
+            ]}
+        >
+            {children}
+        </AppLayout>
+    );
+};
+
+Show.layout = (page: React.ReactNode) => <ShowLayout>{page}</ShowLayout>;

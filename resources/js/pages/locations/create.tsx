@@ -34,7 +34,7 @@ export default function Create({ films }: Props) {
     return (
         <>
             <Head title="Ajouter un emplacement" />
-            <div className="mx-auto max-w-2xl p-8">
+            <div className="mx-auto max-w-4xl p-8">
                 <div className="border-2 border-black dark:border-white bg-white dark:bg-black rounded-none overflow-hidden">
                     <header className="bg-neutral-100 dark:bg-neutral-900 border-b-2 border-black dark:border-white p-6">
                         <h1 className="text-2xl font-black uppercase tracking-tighter">

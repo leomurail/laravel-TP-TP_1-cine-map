@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import LocationController from '@/actions/App/Http/Controllers/LocationController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,7 +44,7 @@ export default function Edit({ location, films }: Props) {
     return (
         <>
             <Head title={`Modifier ${location.name}`} />
-            <div className="mx-auto max-w-2xl p-8">
+            <div className="mx-auto max-w-4xl p-8">
                 <div className="border-2 border-black dark:border-white bg-white dark:bg-black rounded-none overflow-hidden">
                     <header className="bg-neutral-100 dark:bg-neutral-900 border-b-2 border-black dark:border-white p-6">
                         <h1 className="text-2xl font-black uppercase tracking-tighter">
@@ -164,16 +164,21 @@ export default function Edit({ location, films }: Props) {
     );
 }
 
-Edit.layout = (page: React.ReactNode, { location }: Props) => (
-    <AppLayout
-        breadcrumbs={[
-            { title: 'Emplacements', href: LocationController.index().url },
-            {
-                title: 'Modifier',
-                href: LocationController.edit(location.id).url,
-            },
-        ]}
-    >
-        {page}
-    </AppLayout>
-);
+const EditLayout = ({ children }: { children: React.ReactNode }) => {
+    const { location } = usePage<Props>().props;
+    return (
+        <AppLayout
+            breadcrumbs={[
+                { title: 'Emplacements', href: LocationController.index().url },
+                {
+                    title: 'Modifier',
+                    href: LocationController.edit(location.id).url,
+                },
+            ]}
+        >
+            {children}
+        </AppLayout>
+    );
+};
+
+Edit.layout = (page: React.ReactNode) => <EditLayout>{page}</EditLayout>;
