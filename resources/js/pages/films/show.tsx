@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import FilmController from '@/actions/App/Http/Controllers/FilmController';
+import AppLayout from '@/layouts/app-layout';
 
 interface User {
     id: number;
@@ -31,7 +31,7 @@ interface Props {
 
 export default function Show({ film }: Props) {
     return (
-        <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: film.title, href: FilmController.show(film.id).url }]}>
+        <>
             <Head title={film.title} />
             <div className="p-6">
                 <div className="bg-white dark:bg-neutral-900 shadow rounded-lg p-6 mb-6">
@@ -58,6 +58,12 @@ export default function Show({ film }: Props) {
                     )}
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Show.layout = (page: React.ReactNode, { film }: Props) => (
+    <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: film.title, href: FilmController.show(film.id).url }]}>
+        {page}
+    </AppLayout>
+);

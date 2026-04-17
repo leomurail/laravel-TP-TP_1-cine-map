@@ -1,9 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import FilmController from '@/actions/App/Http/Controllers/FilmController';
+import AppLayout from '@/layouts/app-layout';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -18,7 +18,7 @@ export default function Create() {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: 'Ajouter', href: FilmController.create().url }]}>
+        <>
             <Head title="Ajouter un film" />
             <div className="p-6 max-w-2xl mx-auto">
                 <h1 className="text-2xl font-bold mb-6">Ajouter un nouveau film</h1>
@@ -64,6 +64,12 @@ export default function Create() {
                     </div>
                 </form>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Create.layout = (page: React.ReactNode) => (
+    <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: 'Ajouter', href: FilmController.create().url }]}>
+        {page}
+    </AppLayout>
+);

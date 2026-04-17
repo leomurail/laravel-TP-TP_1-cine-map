@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\Film;
 use App\Models\Location;
+use App\Models\User;
 
 test('locations index page is displayed', function () {
     $user = User::factory()->create();

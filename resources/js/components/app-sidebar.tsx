@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Film, FolderGit2, LayoutGrid, MapPin } from 'lucide-react';
+import { BookOpen, CreditCard, Film, FolderGit2, LayoutGrid, MapPin } from 'lucide-react';
 import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import LocationController from '@/actions/App/Http/Controllers/LocationController';
+import SubscriptionController from '@/actions/App/Http/Controllers/SubscriptionController';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -33,6 +34,11 @@ const mainNavItems: NavItem[] = [
         title: 'Emplacements',
         href: LocationController.index().url,
         icon: MapPin,
+    },
+    {
+        title: 'Abonnement',
+        href: SubscriptionController.index().url,
+        icon: CreditCard,
     },
 ];
 

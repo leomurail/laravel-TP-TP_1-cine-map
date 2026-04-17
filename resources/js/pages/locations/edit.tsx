@@ -1,9 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import LocationController from '@/actions/App/Http/Controllers/LocationController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import LocationController from '@/actions/App/Http/Controllers/LocationController';
+import AppLayout from '@/layouts/app-layout';
 
 interface Film {
     id: number;
@@ -39,7 +39,7 @@ export default function Edit({ location, films }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: 'Modifier', href: LocationController.edit(location.id).url }]}>
+        <>
             <Head title={`Modifier ${location.name}`} />
             <div className="p-6 max-w-2xl mx-auto">
                 <h1 className="text-2xl font-bold mb-6">Modifier l'emplacement : {location.name}</h1>
@@ -113,6 +113,12 @@ export default function Edit({ location, films }: Props) {
                     </div>
                 </form>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Edit.layout = (page: React.ReactNode, { location }: Props) => (
+    <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: 'Modifier', href: LocationController.edit(location.id).url }]}>
+        {page}
+    </AppLayout>
+);

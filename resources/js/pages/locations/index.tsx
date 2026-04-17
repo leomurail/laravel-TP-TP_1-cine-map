@@ -1,5 +1,5 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import { MapPin } from 'lucide-react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { MapPin, ThumbsUp } from 'lucide-react';
 import LocationController from '@/actions/App/Http/Controllers/LocationController';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
@@ -11,6 +11,7 @@ interface Location {
     city: string;
     country: string;
     user_id: number;
+    upvotes_count: number;
     film: { id: number; title: string };
     user: { name: string };
 }
@@ -18,8 +19,14 @@ interface Location {
 export default function Index({ locations }: { locations: Location[] }) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
+    const handleUpvote = (id: number) => {
+        router.post(LocationController.upvote(id).url, {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
-        <AppLayout breadcrumbs={[{ title: 'Lieux', href: LocationController.index().url }]}>
+        <>
             <Head title="Exploration des lieux" />
             <div className="p-8 max-w-7xl mx-auto font-sans">
                 <header className="mb-16">
@@ -36,7 +43,16 @@ export default function Index({ locations }: { locations: Location[] }) {
                     {locations.map((loc) => (
                         <div key={loc.id} className="group flex flex-col md:flex-row gap-8 items-start border-l-4 border-transparent hover:border-rose-600 pl-6 transition-all">
                             <div className="flex-1">
-                                <p className="text-rose-600 font-black text-xs uppercase tracking-tighter mb-2 text-balance">{loc.film.title}</p>
+                                <div className="flex justify-between items-start mb-2">
+                                    <p className="text-rose-600 font-black text-xs uppercase tracking-tighter text-balance">{loc.film.title}</p>
+                                    <button 
+                                        onClick={() => handleUpvote(loc.id)}
+                                        className="flex items-center gap-1 text-neutral-500 hover:text-rose-600 transition-colors font-mono text-[10px] uppercase font-black"
+                                    >
+                                        <ThumbsUp size={12} />
+                                        <span>{loc.upvotes_count}</span>
+                                    </button>
+                                </div>
                                 <h2 className="text-4xl font-black uppercase tracking-tight leading-none mb-4 text-balance text-neutral-900 dark:text-neutral-100">
                                     <Link href={LocationController.show(loc.id).url}>{loc.name}</Link>
                                 </h2>
@@ -48,7 +64,7 @@ export default function Index({ locations }: { locations: Location[] }) {
                                     <span>Added by {loc.user.name}</span>
                                     {(auth.user.is_admin || auth.user.id === loc.user_id) && (
                                         <div className="flex gap-4">
-                                            <Link href={LocationController.edit(loc.id).url} className="text-black dark:text-white font-black hover:text-rose-600 transition-colors">Edit</Link>
+                                            <Link href={LocationController.edit(loc.id).url} className="text-black dark:text-white font-black hover:text-rose-600 transition-colors text-balance">Edit</Link>
                                         </div>
                                     )}
                                 </div>
@@ -57,6 +73,12 @@ export default function Index({ locations }: { locations: Location[] }) {
                     ))}
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Index.layout = (page: React.ReactNode) => (
+    <AppLayout breadcrumbs={[{ title: 'Lieux', href: LocationController.index().url }]}>
+        {page}
+    </AppLayout>
+);

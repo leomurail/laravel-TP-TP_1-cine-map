@@ -10,7 +10,13 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    layout: (name) => {
+    layout: (name, page) => {
+        // If the page defines its own functional layout, Inertia will use it.
+        // We only provide a default layout if the page doesn't have one or uses an object (for breadcrumbs).
+        if (typeof page.default.layout === 'function' || Array.isArray(page.default.layout)) {
+            return null;
+        }
+
         switch (true) {
             case name === 'welcome':
                 return null;

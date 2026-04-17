@@ -2,20 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Models\Location;
-use App\Models\Film;
 use App\Http\Requests\StoreLocationRequest;
 use App\Http\Requests\UpdateLocationRequest;
+use App\Jobs\UpdateLocationUpvotes;
+use App\Models\Film;
+use App\Models\Location;
+use App\Models\LocationVote;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class LocationController extends Controller
 {
     use AuthorizesRequests;
+
+    public function upvote(Request $request, Location $location): RedirectResponse
+    {
+        $voted = LocationVote::where('user_id', $request->user()->id)
+            ->where('location_id', $location->id)
+            ->exists();
+
+        if (! $voted) {
+            LocationVote::create([
+                'user_id' => $request->user()->id,
+                'location_id' => $location->id,
+            ]);
+
+            UpdateLocationUpvotes::dispatch($location);
+
+            return back()->with('success', 'Vote enregistré !');
+        }
+
+        return back()->with('error', 'Vous avez déjà voté pour cet emplacement.');
+    }
 
     public function index(): Response
     {

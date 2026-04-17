@@ -1,4 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
+import { Github } from 'lucide-react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -91,6 +92,27 @@ export default function Login({
                             >
                                 {processing && <Spinner />}
                                 Log in
+                            </Button>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground">
+                                        Or continue with
+                                    </span>
+                                </div>
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="w-full"
+                                onClick={() => window.location.href = '/auth/github'}
+                            >
+                                <Github className="mr-2 h-4 w-4" />
+                                GitHub
                             </Button>
                         </div>
 

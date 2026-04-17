@@ -1,6 +1,8 @@
-import { Head, Link, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { ThumbsUp } from 'lucide-react';
 import LocationController from '@/actions/App/Http/Controllers/LocationController';
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
 import type { Auth } from '@/types';
 
 interface User {
@@ -34,8 +36,14 @@ export default function Show({ location }: Props) {
 
     const canEdit = auth.user.is_admin || auth.user.id === location.user_id;
 
+    const handleUpvote = () => {
+        router.post(route('locations.upvote', location.id), {}, {
+            preserveScroll: true,
+        });
+    };
+
     return (
-        <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: location.name, href: LocationController.show(location.id).url }]}>
+        <>
             <Head title={location.name} />
             <div className="p-6">
                 <div className="bg-white dark:bg-neutral-900 shadow rounded-lg p-6">
@@ -61,14 +69,30 @@ export default function Show({ location }: Props) {
                                 <p className="text-xs text-neutral-500 uppercase">Proposé par</p>
                                 <p className="font-bold">{location.user.name}</p>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right flex flex-col items-end gap-2">
                                 <p className="text-xs text-neutral-500 uppercase">Popularité</p>
-                                <p className="font-bold text-2xl">{location.upvotes_count} upvotes</p>
+                                <div className="flex items-center gap-4">
+                                    <p className="font-bold text-2xl">{location.upvotes_count} upvotes</p>
+                                    <Button 
+                                        onClick={handleUpvote}
+                                        variant="outline" 
+                                        className="rounded-full border-2 border-black dark:border-white font-black"
+                                    >
+                                        <ThumbsUp size={16} className="mr-2" />
+                                        Upvote
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Show.layout = (page: React.ReactNode, { location }: Props) => (
+    <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: location.name, href: LocationController.show(location.id).url }]}>
+        {page}
+    </AppLayout>
+);

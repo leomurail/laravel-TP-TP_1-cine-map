@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Film;
 use App\Models\Location;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,8 +20,8 @@ class LocationFactory extends Factory
     public function definition(): array
     {
         return [
-            'film_id' => \App\Models\Film::factory(),
-            'user_id' => \App\Models\User::factory(),
+            'film_id' => Film::factory(),
+            'user_id' => User::factory(),
             'name' => fake()->company(),
             'city' => fake()->city(),
             'country' => fake()->country(),

@@ -1,9 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import LocationController from '@/actions/App/Http/Controllers/LocationController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import LocationController from '@/actions/App/Http/Controllers/LocationController';
+import AppLayout from '@/layouts/app-layout';
 
 interface Film {
     id: number;
@@ -29,7 +29,7 @@ export default function Create({ films }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: 'Ajouter', href: LocationController.create().url }]}>
+        <>
             <Head title="Ajouter un emplacement" />
             <div className="p-6 max-w-2xl mx-auto">
                 <h1 className="text-2xl font-bold mb-6">Nouvel emplacement de tournage</h1>
@@ -103,6 +103,12 @@ export default function Create({ films }: Props) {
                     </div>
                 </form>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Create.layout = (page: React.ReactNode) => (
+    <AppLayout breadcrumbs={[{ title: 'Emplacements', href: LocationController.index().url }, { title: 'Ajouter', href: LocationController.create().url }]}>
+        {page}
+    </AppLayout>
+);

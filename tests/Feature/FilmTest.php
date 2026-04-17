@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Models\Film;
 
 test('films index page is displayed', function () {
     $user = User::factory()->create();

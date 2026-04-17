@@ -1,9 +1,9 @@
 import { Head, useForm } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import FilmController from '@/actions/App/Http/Controllers/FilmController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import FilmController from '@/actions/App/Http/Controllers/FilmController';
+import AppLayout from '@/layouts/app-layout';
 
 interface Film {
     id: number;
@@ -29,7 +29,7 @@ export default function Edit({ film }: Props) {
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: 'Modifier', href: FilmController.edit(film.id).url }]}>
+        <>
             <Head title={`Modifier ${film.title}`} />
             <div className="p-6 max-w-2xl mx-auto">
                 <h1 className="text-2xl font-bold mb-6">Modifier : {film.title}</h1>
@@ -75,6 +75,12 @@ export default function Edit({ film }: Props) {
                     </div>
                 </form>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Edit.layout = (page: React.ReactNode, { film }: Props) => (
+    <AppLayout breadcrumbs={[{ title: 'Films', href: FilmController.index().url }, { title: 'Modifier', href: FilmController.edit(film.id).url }]}>
+        {page}
+    </AppLayout>
+);

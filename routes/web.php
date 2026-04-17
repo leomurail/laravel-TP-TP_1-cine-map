@@ -7,16 +7,25 @@ Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
+use App\Http\Controllers\SocialController;
+use App\Http\Controllers\SubscriptionController;
+
+Route::get('auth/github', [SocialController::class, 'redirectToGithub'])->name('auth.github');
+Route::get('auth/github/callback', [SocialController::class, 'handleGithubCallback']);
+
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\LocationController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
+    Route::post('subscription/checkout', [SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+    Route::get('subscription/success', [SubscriptionController::class, 'success'])->name('subscription.success');
+
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
     // Films
     Route::get('films', [FilmController::class, 'index'])->name('films.index');
-    Route::get('films/{film}', [FilmController::class, 'show'])->name('films.show');
-    
+
     Route::middleware('admin')->group(function () {
         Route::get('films/create', [FilmController::class, 'create'])->name('films.create');
         Route::post('films', [FilmController::class, 'store'])->name('films.store');
@@ -25,8 +34,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('films/{film}', [FilmController::class, 'destroy'])->name('films.destroy');
     });
 
+    Route::get('films/{film}', [FilmController::class, 'show'])->name('films.show');
+
     // Locations
     Route::resource('locations', LocationController::class);
+    Route::post('locations/{location}/upvote', [LocationController::class, 'upvote'])->name('locations.upvote');
 });
 
 require __DIR__.'/settings.php';

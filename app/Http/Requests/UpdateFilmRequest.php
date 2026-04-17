@@ -18,13 +18,13 @@ class UpdateFilmRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'title' => 'required|string|max:255',
-            'release_year' => 'required|integer|min:1888|max:' . (date('Y') + 10),
+            'release_year' => 'required|integer|min:1888|max:'.(date('Y') + 10),
             'synopsis' => 'required|string',
         ];
     }

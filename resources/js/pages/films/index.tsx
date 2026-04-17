@@ -12,11 +12,13 @@ interface Film {
     synopsis: string;
 }
 
+import { dashboard } from '@/routes';
+
 export default function Index({ films }: { films: Film[] }) {
     const { auth } = usePage<{ auth: Auth }>().props;
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Catalogue', href: FilmController.index().url }]}>
+        <>
             <Head title="Catalogue de Films" />
             <div className="p-8 max-w-7xl mx-auto font-sans">
                 <header className="mb-16">
@@ -58,6 +60,12 @@ export default function Index({ films }: { films: Film[] }) {
                     ))}
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+Index.layout = (page: React.ReactNode) => (
+    <AppLayout breadcrumbs={[{ title: 'Catalogue', href: FilmController.index().url }]}>
+        {page}
+    </AppLayout>
+);
