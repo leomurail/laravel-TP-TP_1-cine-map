@@ -94,7 +94,16 @@ class ChatController extends Controller
 
         $response = CineMapServer::tool($tool, $arguments);
 
-        return $response->getContent();
+        // Le package laravel/mcp renvoie un TestResponse dont les données sont protégées.
+        // On utilise la réflexion pour extraire le résultat brut.
+        $reflection = new \ReflectionClass($response);
+        $property = $reflection->getProperty('response');
+        $underlyingResponse = $property->getValue($response);
+
+        $data = $underlyingResponse->toArray();
+
+        // On extrait le texte du premier élément de contenu du résultat JSON-RPC
+        return $data['result']['content'][0]['text'] ?? '';
     }
 
     private function getToolsDefinition()
