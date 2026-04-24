@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mcp\Servers\CineMapServer;
+use App\Mcp\Tools\GetLocationsForFilmTool;
+use App\Mcp\Tools\ListFilmsTool;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -26,7 +28,7 @@ class ChatController extends Controller
 
         try {
             $messages = [
-                ['role' => 'user', 'content' => $userMessage]
+                ['role' => 'user', 'content' => $userMessage],
             ];
 
             $maxIterations = 5;
@@ -35,20 +37,20 @@ class ChatController extends Controller
 
             while ($iteration < $maxIterations) {
                 $iteration++;
-                
+
                 // Call Zen with current conversation history
                 $response = $this->callZen($messages, $apiKey, $model, $baseUrl);
                 $data = $response->json();
-                
+
                 Log::info("Iteration $iteration - Zen AI Response:", ['data' => $data]);
-                
+
                 $message = $data['choices'][0]['message'];
                 $messages[] = $message; // Add AI response to history
 
                 // Check if AI wants to call tools
-                if (!empty($message['tool_calls'])) {
+                if (! empty($message['tool_calls'])) {
                     Log::info("Iteration $iteration - AI is calling tools:", ['tool_calls' => $message['tool_calls']]);
-                    
+
                     foreach ($message['tool_calls'] as $toolCall) {
                         $toolName = $toolCall['function']['name'];
                         $arguments = json_decode($toolCall['function']['arguments'], true) ?? [];
@@ -64,6 +66,7 @@ class ChatController extends Controller
                             'content' => $toolResult,
                         ];
                     }
+
                     // Continue the loop to send tool results back to AI
                     continue;
                 }
@@ -77,9 +80,11 @@ class ChatController extends Controller
 
         } catch (RequestException $e) {
             Log::error('Zen API Request Error: '.$e->getMessage());
-            return response()->json(['response' => "Erreur de communication avec Zen : ".$e->getMessage()]);
+
+            return response()->json(['response' => 'Erreur de communication avec Zen : '.$e->getMessage()]);
         } catch (\Exception $e) {
             Log::error('ChatBot Error: '.$e->getMessage());
+
             return response()->json(['response' => "Désolé, j'ai rencontré une difficulté technique. ".$e->getMessage()]);
         }
     }
@@ -88,7 +93,7 @@ class ChatController extends Controller
     {
         $systemMessage = [
             'role' => 'system',
-            'content' => 'Tu es l\'assistant CineMap. Tu aides les utilisateurs à trouver des informations sur les films et les lieux de tournage. Si un utilisateur te demande les lieux d\'un film par son nom, utilise d\'abord list_films_tool pour trouver l\'ID du film, puis utilise get_locations_for_film_tool avec cet ID.'
+            'content' => 'Tu es l\'assistant CineMap. Tu aides les utilisateurs à trouver des informations sur les films et les lieux de tournage. Si un utilisateur te demande les lieux d\'un film par son nom, utilise d\'abord list_films_tool pour trouver l\'ID du film, puis utilise get_locations_for_film_tool avec cet ID.',
         ];
 
         return Http::withToken($apiKey)->post("{$baseUrl}/chat/completions", [
@@ -102,8 +107,8 @@ class ChatController extends Controller
     private function executeMcpTool($name, $arguments)
     {
         $map = [
-            'list_films_tool' => \App\Mcp\Tools\ListFilmsTool::class,
-            'get_locations_for_film_tool' => \App\Mcp\Tools\GetLocationsForFilmTool::class,
+            'list_films_tool' => ListFilmsTool::class,
+            'get_locations_for_film_tool' => GetLocationsForFilmTool::class,
         ];
 
         $tool = $map[$name] ?? $name;
@@ -129,9 +134,9 @@ class ChatController extends Controller
                     'description' => 'List all films in the CineMap database',
                     'parameters' => [
                         'type' => 'object',
-                        'properties' => new \stdClass(),
+                        'properties' => new \stdClass,
                     ],
-                ]
+                ],
             ],
             [
                 'type' => 'function',
@@ -148,7 +153,7 @@ class ChatController extends Controller
                         ],
                         'required' => ['film_id'],
                     ],
-                ]
+                ],
             ],
         ];
     }
