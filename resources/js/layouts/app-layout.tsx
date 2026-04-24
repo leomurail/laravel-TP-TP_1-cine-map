@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import type { BreadcrumbItem } from '@/types';
+import ChatBot from '@/components/chat-bot';
 
 export default function AppLayout({
     breadcrumbs = [],
@@ -28,6 +29,7 @@ export default function AppLayout({
     return (
         <AppLayoutTemplate breadcrumbs={breadcrumbs}>
             {children}
+            <ChatBot />
         </AppLayoutTemplate>
     );
 }

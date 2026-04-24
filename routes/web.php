@@ -39,6 +39,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Locations
     Route::resource('locations', LocationController::class);
     Route::post('locations/{location}/upvote', [LocationController::class, 'upvote'])->name('locations.upvote');
+    // Chatbot
+    Route::post('/chat', \App\Http\Controllers\ChatController::class)->name('chat');
 });
 
 require __DIR__.'/settings.php';
