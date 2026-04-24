@@ -25,7 +25,7 @@ export default function ChatBot() {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-lite');
+    const [selectedModel, setSelectedModel] = useState('big-pickle');
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -106,10 +106,10 @@ export default function ChatBot() {
                                     <SelectValue placeholder="Model" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</SelectItem>
-                                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
-                                    <SelectItem value="gemini-1.5-flash-latest">Gemini 1.5 Flash</SelectItem>
-                                    <SelectItem value="gemini-1.5-pro-latest">Gemini 1.5 Pro</SelectItem>
+                                    <SelectItem value="big-pickle">Big Pickle (Zen)</SelectItem>
+                                    <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
+                                    <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                                    <SelectItem value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</SelectItem>
                                 </SelectContent>
                             </Select>
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>

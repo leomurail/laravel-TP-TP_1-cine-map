@@ -11,171 +11,122 @@ use Illuminate\Support\Facades\Log;
 class ChatController extends Controller
 {
     /**
-     * Handle the incoming chat request using Gemini 2.0 Flash Lite as an agent.
+     * Handle the incoming chat request using Zen (OpenCode) as an agent.
      */
     public function __invoke(Request $request)
     {
         $userMessage = $request->input('message');
-        $apiKey = config('services.gemini.key');
-        $model = $request->input('model') ?? config('services.gemini.model');
+        $apiKey = config('services.zen.key');
+        $model = $request->input('model') ?? config('services.zen.model');
+        $baseUrl = config('services.zen.base_url');
 
         if (! $apiKey) {
-            return response()->json(['response' => "Oups ! La clé API Gemini n'est pas configurée dans le fichier .env. Veuillez ajouter GEMINI_API_KEY."]);
+            return response()->json(['response' => "Oups ! La clé API Zen n'est pas configurée dans le fichier .env. Veuillez ajouter ZEN_API_KEY."]);
         }
 
         try {
-            // 1. Initial call to Gemini with tools description
-            $response = $this->callGemini($userMessage, $apiKey, $model);
+            // 1. Initial call to Zen with tools
+            $response = $this->callZen([
+                ['role' => 'user', 'content' => $userMessage]
+            ], $apiKey, $model, $baseUrl);
 
-            if ($response->status() === 429) {
-                Log::error('Gemini API Quota Exceeded: '.$response->body());
+            $data = $response->json();
+            $message = $data['choices'][0]['message'];
 
-                return response()->json(['response' => "Désolé, j'ai dépassé mon quota de messages. Veuillez réessayer dans quelques instants ou vérifier votre configuration."]);
-            }
-            // If it reached here but failed for some other reason not caught by throw() (unlikely with throw())
-            if ($response->failed()) {
-                Log::error('Gemini API Error: '.$response->body());
+            // 2. Handle Tool Calls
+            if (!empty($message['tool_calls'])) {
+                $messages = [
+                    ['role' => 'user', 'content' => $userMessage],
+                    $message
+                ];
 
-                return response()->json(['response' => 'Erreur lors de la communication avec Gemini. Vérifiez votre clé API ou réessayez plus tard.']);
-            }
-
-            $candidate = $response->json('candidates.0');
-            $parts = $candidate['content']['parts'] ?? [];
-            $finalText = '';
-
-            foreach ($parts as $part) {
-                if (isset($part['text'])) {
-                    $finalText .= $part['text'];
-                }
-
-                // 2. Handle Function (Tool) Call
-                if (isset($part['functionCall'])) {
-                    $toolName = $part['functionCall']['name'];
-                    $arguments = $part['functionCall']['args'] ?? [];
+                foreach ($message['tool_calls'] as $toolCall) {
+                    $toolName = $toolCall['function']['name'];
+                    $arguments = json_decode($toolCall['function']['arguments'], true) ?? [];
 
                     // Execute the tool via our CineMapServer
                     $toolResult = $this->executeMcpTool($toolName, $arguments);
 
-                    // 3. Send tool result back to Gemini for final response
-                    $finalResponse = $this->callGeminiWithToolResult(
-                        $userMessage,
-                        $toolName,
-                        $toolResult,
-                        $apiKey,
-                        $model
-                    );
-
-                    // No need for failed check here if we use throw() below
-
-                    $finalText = $finalResponse->json('candidates.0.content.parts.0.text');
+                    $messages[] = [
+                        'tool_call_id' => $toolCall['id'],
+                        'role' => 'tool',
+                        'name' => $toolName,
+                        'content' => $toolResult,
+                    ];
                 }
+
+                // 3. Final call with tool results
+                $finalResponse = $this->callZen($messages, $apiKey, $model, $baseUrl);
+                $finalText = $finalResponse->json('choices.0.message.content');
+            } else {
+                $finalText = $message['content'];
             }
 
             return response()->json(['response' => $finalText ?: "Je n'ai pas pu générer de réponse."]);
 
         } catch (RequestException $e) {
-            if ($e->response->status() === 429) {
-                Log::error('Gemini API Quota Exceeded (Exception): '.$e->response->body());
-
-                return response()->json(['response' => "Désolé, j'ai dépassé mon quota de messages Gemini. Veuillez réessayer dans quelques instants ou vérifier votre configuration dans le fichier .env."]);
-            }
-            Log::error('Gemini API Request Error: '.$e->getMessage());
-
-            return response()->json(['response' => "Erreur de communication avec l'API : ".$e->getMessage()]);
+            Log::error('Zen API Request Error: '.$e->getMessage());
+            return response()->json(['response' => "Erreur de communication avec Zen : ".$e->getMessage()]);
         } catch (\Exception $e) {
             Log::error('ChatBot Error: '.$e->getMessage());
-
             return response()->json(['response' => "Désolé, j'ai rencontré une difficulté technique. ".$e->getMessage()]);
         }
     }
 
-    private function callGemini($message, $apiKey, $model)
+    private function callZen(array $messages, $apiKey, $model, $baseUrl)
     {
-        return Http::retry(3, 1000)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
-            'contents' => [
-                [
-                    'role' => 'user',
-                    'parts' => [['text' => $message]],
-                ],
-            ],
-            'tools' => [
-                ['function_declarations' => $this->getToolsDefinition()],
-            ],
-            'tool_config' => [
-                'function_calling_config' => ['mode' => 'AUTO'],
-            ],
+        return Http::withToken($apiKey)->post("{$baseUrl}/chat/completions", [
+            'model' => $model,
+            'messages' => $messages,
+            'tools' => $this->getToolsDefinition(),
+            'tool_choice' => 'auto',
         ])->throw();
     }
 
     private function executeMcpTool($name, $arguments)
     {
-        // Using CineMapServer's testing capability to run tools programmatically
-        $response = CineMapServer::tool($name, $arguments);
+        $map = [
+            'list_films_tool' => \App\Mcp\Tools\ListFilmsTool::class,
+            'get_locations_for_film_tool' => \App\Mcp\Tools\GetLocationsForFilmTool::class,
+        ];
+
+        $tool = $map[$name] ?? $name;
+
+        $response = CineMapServer::tool($tool, $arguments);
 
         return $response->getContent();
-    }
-
-    private function callGeminiWithToolResult($userMessage, $toolName, $result, $apiKey, $model)
-    {
-        return Http::retry(3, 1000)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
-            'contents' => [
-                [
-                    'role' => 'user',
-                    'parts' => [['text' => $userMessage]],
-                ],
-                [
-                    'role' => 'model',
-                    'parts' => [
-                        [
-                            'functionCall' => [
-                                'name' => $toolName,
-                                'args' => new \stdClass,
-                            ],
-                        ],
-                    ],
-                ],
-                [
-                    'role' => 'user',
-                    'parts' => [
-                        [
-                            'functionResponse' => [
-                                'name' => $toolName,
-                                'response' => ['content' => $result],
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            'tools' => [
-                ['function_declarations' => $this->getToolsDefinition()],
-            ],
-        ])->throw();
     }
 
     private function getToolsDefinition()
     {
         return [
             [
-                'name' => 'list-films-tool',
-                'description' => 'List all films in the CineMap database',
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => (object) [],
-                ],
+                'type' => 'function',
+                'function' => [
+                    'name' => 'list_films_tool',
+                    'description' => 'List all films in the CineMap database',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => (object) [],
+                    ],
+                ]
             ],
             [
-                'name' => 'get-locations-for-film-tool',
-                'description' => 'Get all filming locations for a specific film',
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'film_id' => [
-                            'type' => 'number',
-                            'description' => 'The ID of the film',
+                'type' => 'function',
+                'function' => [
+                    'name' => 'get_locations_for_film_tool',
+                    'description' => 'Get all filming locations for a specific film',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'film_id' => [
+                                'type' => 'number',
+                                'description' => 'The ID of the film',
+                            ],
                         ],
+                        'required' => ['film_id'],
                     ],
-                    'required' => ['film_id'],
-                ],
+                ]
             ],
         ];
     }

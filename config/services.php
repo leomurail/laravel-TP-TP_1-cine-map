@@ -22,9 +22,10 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
-    'gemini' => [
-        'key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash-lite'),
+    'zen' => [
+        'key' => env('ZEN_API_KEY'),
+        'model' => env('ZEN_MODEL', 'gpt-4o-mini'),
+        'base_url' => 'https://opencode.ai/zen/v1',
     ],
 
     'ses' => [
