@@ -14,7 +14,7 @@ use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-#[Fillable(['name', 'email', 'password', 'is_admin', 'github_id', 'github_nickname', 'github_token', 'google_id', 'google_nickname', 'google_token', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'is_admin', 'google_id', 'google_nickname', 'google_token', 'email_verified_at'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {

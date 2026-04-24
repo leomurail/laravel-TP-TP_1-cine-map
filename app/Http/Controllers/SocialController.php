@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialController extends Controller
@@ -54,6 +55,10 @@ class SocialController extends Controller
 
             return redirect()->intended('/dashboard');
         } catch (\Exception $e) {
+            Log::error("Social Auth Error ({$provider}): " . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
+            ]);
             return redirect('/login')->with('error', 'Authentication failed: ' . $e->getMessage());
         }
     }

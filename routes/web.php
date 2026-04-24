@@ -10,8 +10,8 @@ Route::inertia('/', 'welcome', [
 use App\Http\Controllers\SocialController;
 use App\Http\Controllers\SubscriptionController;
 
-Route::get('auth/github', [SocialController::class, 'redirectToGithub'])->name('auth.github');
-Route::get('auth/github/callback', [SocialController::class, 'handleGithubCallback']);
+Route::get('auth/{provider}', [SocialController::class, 'redirectToProvider'])->name('auth.social');
+Route::get('auth/{provider}/callback', [SocialController::class, 'handleProviderCallback']);
 
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\LocationController;
