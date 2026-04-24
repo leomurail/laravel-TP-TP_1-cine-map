@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class ChatController extends Controller
 {
     /**
-     * Handle the incoming chat request using Zen (OpenCode) as an agent.
+     * Handle the incoming chat request using Zen (OpenCode) as an autonomous agent.
      */
     public function __invoke(Request $request)
     {
@@ -25,44 +25,55 @@ class ChatController extends Controller
         }
 
         try {
-            // 1. Initial call to Zen with tools
-            $response = $this->callZen([
+            $messages = [
                 ['role' => 'user', 'content' => $userMessage]
-            ], $apiKey, $model, $baseUrl);
+            ];
 
-            $data = $response->json();
-            $message = $data['choices'][0]['message'];
+            $maxIterations = 5;
+            $iteration = 0;
+            $finalText = null;
 
-            // 2. Handle Tool Calls
-            if (!empty($message['tool_calls'])) {
-                $messages = [
-                    ['role' => 'user', 'content' => $userMessage],
-                    $message
-                ];
+            while ($iteration < $maxIterations) {
+                $iteration++;
+                
+                // Call Zen with current conversation history
+                $response = $this->callZen($messages, $apiKey, $model, $baseUrl);
+                $data = $response->json();
+                
+                Log::info("Iteration $iteration - Zen AI Response:", ['data' => $data]);
+                
+                $message = $data['choices'][0]['message'];
+                $messages[] = $message; // Add AI response to history
 
-                foreach ($message['tool_calls'] as $toolCall) {
-                    $toolName = $toolCall['function']['name'];
-                    $arguments = json_decode($toolCall['function']['arguments'], true) ?? [];
+                // Check if AI wants to call tools
+                if (!empty($message['tool_calls'])) {
+                    Log::info("Iteration $iteration - AI is calling tools:", ['tool_calls' => $message['tool_calls']]);
+                    
+                    foreach ($message['tool_calls'] as $toolCall) {
+                        $toolName = $toolCall['function']['name'];
+                        $arguments = json_decode($toolCall['function']['arguments'], true) ?? [];
 
-                    // Execute the tool via our CineMapServer
-                    $toolResult = $this->executeMcpTool($toolName, $arguments);
+                        // Execute the tool via our CineMapServer
+                        $toolResult = $this->executeMcpTool($toolName, $arguments);
+                        Log::info("Iteration $iteration - Tool Result for $toolName:", ['result' => $toolResult]);
 
-                    $messages[] = [
-                        'tool_call_id' => $toolCall['id'],
-                        'role' => 'tool',
-                        'name' => $toolName,
-                        'content' => $toolResult,
-                    ];
+                        $messages[] = [
+                            'tool_call_id' => $toolCall['id'],
+                            'role' => 'tool',
+                            'name' => $toolName,
+                            'content' => $toolResult,
+                        ];
+                    }
+                    // Continue the loop to send tool results back to AI
+                    continue;
                 }
 
-                // 3. Final call with tool results
-                $finalResponse = $this->callZen($messages, $apiKey, $model, $baseUrl);
-                $finalText = $finalResponse->json('choices.0.message.content');
-            } else {
+                // If no tool calls, we have our final response
                 $finalText = $message['content'];
+                break;
             }
 
-            return response()->json(['response' => $finalText ?: "Je n'ai pas pu générer de réponse."]);
+            return response()->json(['response' => $finalText ?: "Désolé, je n'ai pas pu terminer ma réflexion."]);
 
         } catch (RequestException $e) {
             Log::error('Zen API Request Error: '.$e->getMessage());
@@ -75,9 +86,14 @@ class ChatController extends Controller
 
     private function callZen(array $messages, $apiKey, $model, $baseUrl)
     {
+        $systemMessage = [
+            'role' => 'system',
+            'content' => 'Tu es l\'assistant CineMap. Tu aides les utilisateurs à trouver des informations sur les films et les lieux de tournage. Si un utilisateur te demande les lieux d\'un film par son nom, utilise d\'abord list_films_tool pour trouver l\'ID du film, puis utilise get_locations_for_film_tool avec cet ID.'
+        ];
+
         return Http::withToken($apiKey)->post("{$baseUrl}/chat/completions", [
             'model' => $model,
-            'messages' => $messages,
+            'messages' => array_merge([$systemMessage], $messages),
             'tools' => $this->getToolsDefinition(),
             'tool_choice' => 'auto',
         ])->throw();
@@ -94,15 +110,13 @@ class ChatController extends Controller
 
         $response = CineMapServer::tool($tool, $arguments);
 
-        // Le package laravel/mcp renvoie un TestResponse dont les données sont protégées.
-        // On utilise la réflexion pour extraire le résultat brut.
         $reflection = new \ReflectionClass($response);
         $property = $reflection->getProperty('response');
+        $property->setAccessible(true);
         $underlyingResponse = $property->getValue($response);
 
         $data = $underlyingResponse->toArray();
 
-        // On extrait le texte du premier élément de contenu du résultat JSON-RPC
         return $data['result']['content'][0]['text'] ?? '';
     }
 
@@ -116,7 +130,7 @@ class ChatController extends Controller
                     'description' => 'List all films in the CineMap database',
                     'parameters' => [
                         'type' => 'object',
-                        'properties' => (object) [],
+                        'properties' => new \stdClass(),
                     ],
                 ]
             ],
