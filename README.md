@@ -5,12 +5,12 @@ CineMap est une application Laravel (Inertia/React) permettant de répertorier e
 ## Architecture du Projet
 
 L'application repose sur une stack moderne :
-- **Backend** : Laravel 11.
+- **Backend** : Laravel 13.
 - **Frontend** : React 19 avec Inertia.js.
 - **Base de données** : SQLite.
 - **Style** : Tailwind CSS (v4).
 - **Services tiers** : GitHub (OAuth), Stripe (Abonnements).
-- **MCP** : Un serveur Model Context Protocol (Node.js) pour l'intégration IA.
+- **MCP** : Intégration native via `laravel/mcp`.
 
 ## Installation Rapide (Makefile)
 
@@ -20,7 +20,7 @@ Le projet inclut un `Makefile` pour simplifier les commandes courantes.
    ```bash
    make setup
    ```
-   *Cette commande installe les dépendances (PHP, JS, MCP), crée le fichier `.env`, génère la clé d'application et initialise la base de données SQLite avec des données de test.*
+   *Cette commande installe les dépendances (PHP, JS), crée le fichier `.env`, génère la clé d'application et initialise la base de données SQLite avec des données de test.*
 
 2. **Lancer les services de développement** :
    ```bash
@@ -38,12 +38,12 @@ Le projet inclut un `Makefile` pour simplifier les commandes courantes.
 | Commande | Description |
 | :--- | :--- |
 | `make help` | Affiche la liste des commandes disponibles. |
-| `make install` | Installe toutes les dépendances (Backend, Frontend, MCP). |
+| `make install` | Installe toutes les dépendances (Backend, Frontend). |
 | `make setup` | Installe tout et initialise la base de données. |
 | `make dev` | Lance Laravel + Vite + Queue Worker. |
 | `make server` | Lance uniquement `php artisan serve`. |
 | `make queue` | Lance le worker de queue. |
-| `make mcp` | Lance le serveur MCP Node.js. |
+| `make mcp` | Lance le serveur MCP via Artisan. |
 | `make lint` | Formate le code avec Laravel Pint. |
 | `make test` | Lance les tests PHPUnit/Pest. |
 | `make db-reset` | Réinitialise la base de données et les données de test. |
@@ -68,7 +68,19 @@ Le projet inclut un `Makefile` pour simplifier les commandes courantes.
 - Une commande Artisan (`app:cleanup-locations`) nettoie automatiquement les emplacements obsolètes. Elle est planifiée quotidiennement.
 
 ### 5. Intégration IA (MCP)
-- Le serveur MCP permet à un client compatible (comme Claude Desktop ou Gemini CLI) d'interroger la base de données des films et lieux.
+CineMap expose ses données via le **Model Context Protocol**. Vous pouvez connecter un client compatible (comme Claude Desktop) en utilisant la configuration suivante :
+
+```json
+{
+  "mcpServers": {
+    "cinemap": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "cinemap"],
+      "cwd": "/votre/chemin/vers/cine-map"
+    }
+  }
+}
+```
 
 ## Documentation technique
 Pour plus de détails sur l'implémentation, consultez [EXPLAINATION.md](EXPLAINATION.md).
