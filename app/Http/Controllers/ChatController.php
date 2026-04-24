@@ -16,6 +16,7 @@ class ChatController extends Controller
     {
         $userMessage = $request->input('message');
         $apiKey = config('services.gemini.key');
+        $model = $request->input('model') ?? config('services.gemini.model');
 
         if (! $apiKey) {
             return response()->json(['response' => "Oups ! La clé API Gemini n'est pas configurée dans le fichier .env. Veuillez ajouter GEMINI_API_KEY."]);
@@ -23,11 +24,16 @@ class ChatController extends Controller
 
         try {
             // 1. Initial call to Gemini with tools description
-            $response = $this->callGemini($userMessage, $apiKey);
+            $response = $this->callGemini($userMessage, $apiKey, $model);
             
+            if ($response->status() === 429) {
+                Log::error('Gemini API Quota Exceeded: ' . $response->body());
+                return response()->json(['response' => "Désolé, j'ai dépassé mon quota de messages. Veuillez réessayer dans quelques instants ou vérifier votre configuration."]);
+            }
+            // If it reached here but failed for some other reason not caught by throw() (unlikely with throw())
             if ($response->failed()) {
                 Log::error('Gemini API Error: ' . $response->body());
-                return response()->json(['response' => "Erreur lors de la communication avec Gemini. Vérifiez votre clé API."]);
+                return response()->json(['response' => "Erreur lors de la communication avec Gemini. Vérifiez votre clé API ou réessayez plus tard."]);
             }
 
             $candidate = $response->json('candidates.0');
@@ -52,24 +58,34 @@ class ChatController extends Controller
                         $userMessage, 
                         $toolName, 
                         $toolResult, 
-                        $apiKey
+                        $apiKey,
+                        $model
                     );
+
+                    // No need for failed check here if we use throw() below
                     
                     $finalText = $finalResponse->json('candidates.0.content.parts.0.text');
                 }
             }
 
-            return response()->json(['response' => $finalText]);
+            return response()->json(['response' => $finalText ?: "Je n'ai pas pu générer de réponse."]);
 
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            if ($e->response->status() === 429) {
+                Log::error('Gemini API Quota Exceeded (Exception): ' . $e->response->body());
+                return response()->json(['response' => "Désolé, j'ai dépassé mon quota de messages Gemini. Veuillez réessayer dans quelques instants ou vérifier votre configuration dans le fichier .env."]);
+            }
+            Log::error('Gemini API Request Error: ' . $e->getMessage());
+            return response()->json(['response' => "Erreur de communication avec l'API : " . $e->getMessage()]);
         } catch (\Exception $e) {
             Log::error('ChatBot Error: ' . $e->getMessage());
             return response()->json(['response' => "Désolé, j'ai rencontré une difficulté technique. " . $e->getMessage()]);
         }
     }
 
-    private function callGemini($message, $apiKey)
+    private function callGemini($message, $apiKey, $model)
     {
-        return Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={$apiKey}", [
+        return Http::retry(3, 1000)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
             'contents' => [
                 [
                     'role' => 'user',
@@ -82,7 +98,7 @@ class ChatController extends Controller
             'tool_config' => [
                 'function_calling_config' => ['mode' => 'AUTO']
             ]
-        ]);
+        ])->throw();
     }
 
     private function executeMcpTool($name, $arguments)
@@ -93,9 +109,9 @@ class ChatController extends Controller
         return $response->getContent();
     }
 
-    private function callGeminiWithToolResult($userMessage, $toolName, $result, $apiKey)
+    private function callGeminiWithToolResult($userMessage, $toolName, $result, $apiKey, $model)
     {
-        return Http::post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={$apiKey}", [
+        return Http::retry(3, 1000)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
             'contents' => [
                 [
                     'role' => 'user',
@@ -127,7 +143,7 @@ class ChatController extends Controller
             'tools' => [
                 ['function_declarations' => $this->getToolsDefinition()]
             ]
-        ]);
+        ])->throw();
     }
 
     private function getToolsDefinition()

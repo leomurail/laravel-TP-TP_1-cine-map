@@ -1,8 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { MessageCircle, X, Send, Bot } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, Settings2 } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface Message {
     id: number;
@@ -17,6 +25,7 @@ export default function ChatBot() {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-lite');
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -41,10 +50,21 @@ export default function ChatBot() {
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
                 },
-                body: JSON.stringify({ message: userMsg.content }),
+                body: JSON.stringify({ 
+                    message: userMsg.content,
+                    model: selectedModel
+                }),
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                if (response.status === 429) {
+                    toast.error("Quota API dépassé. Veuillez patienter.");
+                } else {
+                    toast.error(errorData.response || "Une erreur est survenue.");
+                }
+                throw new Error('Network response was not ok');
+            }
 
             const data = await response.json();
             const assistantMsg: Message = { 
@@ -75,14 +95,27 @@ export default function ChatBot() {
                 </Button>
             ) : (
                 <Card className="w-80 sm:w-96 h-[500px] flex flex-col shadow-2xl animate-in slide-in-from-bottom-5 duration-300">
-                    <CardHeader className="flex flex-row items-center justify-between py-3 border-b">
+                    <CardHeader className="flex flex-row items-center justify-between py-2 border-b">
                         <div className="flex items-center gap-2">
                             <Bot className="h-5 w-5 text-primary" />
-                            <span className="font-semibold">Assistant CineMap</span>
+                            <span className="font-semibold text-sm">Assistant CineMap</span>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
-                            <X className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            <Select value={selectedModel} onValueChange={setSelectedModel}>
+                                <SelectTrigger className="h-8 w-[140px] text-[10px] border-none shadow-none focus:ring-0">
+                                    <SelectValue placeholder="Model" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</SelectItem>
+                                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
+                                    <SelectItem value="gemini-1.5-flash-latest">Gemini 1.5 Flash</SelectItem>
+                                    <SelectItem value="gemini-1.5-pro-latest">Gemini 1.5 Pro</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
                         {messages.map((msg) => (
