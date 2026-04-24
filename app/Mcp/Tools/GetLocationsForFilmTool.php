@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Tools;
 
+use App\Models\Location;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -17,7 +18,7 @@ class GetLocationsForFilmTool extends Tool
     public function handle(Request $request): Response
     {
         $filmId = $request->get('film_id');
-        $locations = \App\Models\Location::where('film_id', $filmId)
+        $locations = Location::where('film_id', $filmId)
             ->select('id', 'name', 'city', 'country', 'description', 'upvotes_count')
             ->get();
 

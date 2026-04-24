@@ -1,45 +1,52 @@
 # 🎨 Laravel Pint
 
-Laravel Pint est un fixeur de style de code PHP pour les minimalistes. Il est basé sur PHP-CS-Fixer et permet de s'assurer que ton code PHP reste propre, lisible et cohérent avec les standards de Laravel.
+Laravel Pint est un fixeur de style de code PHP pour les minimalistes. Il permet de s'assurer que ton code PHP reste propre, lisible et cohérent avec les standards de Laravel.
 
 ## 🚀 Pourquoi utiliser Pint ?
 
 - **Cohérence :** Tout le code du projet suit les mêmes règles de formatage.
 - **Automatisme :** Ne perds plus de temps à formater tes fichiers manuellement.
-- **Simplicité :** Pas de configuration complexe, il fonctionne "out-of-the-box" avec le style Laravel.
+- **Simplicité :** Pas de configuration complexe, il fonctionne "out-of-the-box".
 
-## 🛠️ Utilisation
+## ⚙️ Installation et Configuration
 
-Le projet est configuré avec des scripts Composer pour faciliter l'utilisation de Pint.
+Voici comment Pint a été mis en place sur ce projet :
 
-### Corriger le style de code
-Pour scanner et corriger automatiquement tous les fichiers PHP du projet :
+### 1. Installation
+Pint a été installé comme dépendance de développement via Composer :
 ```bash
-composer run lint
-```
-*Cette commande exécute `pint --parallel`.*
-
-### Vérifier sans modifier
-Pour vérifier si des fichiers ne respectent pas le style sans les modifier (utile pour la CI) :
-```bash
-composer run lint:check
-```
-*Cette commande exécute `pint --parallel --test`.*
-
-### Utilisation avancée
-Tu peux aussi utiliser le binaire directement pour cibler des fichiers spécifiques :
-```bash
-./vendor/bin/pint app/Models/User.php
+composer require laravel/pint --dev
 ```
 
-## ⚙️ Configuration
-
-La configuration se trouve dans le fichier `pint.json` à la racine du projet. Par défaut, il utilise le preset `laravel` :
-
+### 2. Le fichier de règles (`pint.json`)
+Un fichier `pint.json` a été créé à la racine pour définir le style à appliquer. Nous utilisons le standard officiel de Laravel :
 ```json
 {
     "preset": "laravel"
 }
+```
+
+### 3. Automatisation (`composer.json`)
+Pour simplifier son utilisation, deux scripts ont été ajoutés dans le fichier `composer.json` :
+- `"lint"` : Pour corriger automatiquement les fichiers.
+- `"lint:check"` : Pour vérifier le style sans modifier les fichiers (idéal pour la CI).
+
+## 🛠️ Utilisation au quotidien
+
+### Corriger le style de code
+```bash
+composer run lint
+```
+
+### Vérifier sans modifier
+```bash
+composer run lint:check
+```
+
+### Utilisation ciblée
+Tu peux aussi viser un dossier ou un fichier précis :
+```bash
+./vendor/bin/pint app/Models
 ```
 
 ## 💡 Astuce

@@ -2,6 +2,8 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\GetLocationsForFilmTool;
+use App\Mcp\Tools\ListFilmsTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -13,8 +15,8 @@ use Laravel\Mcp\Server\Attributes\Version;
 class CineMapServer extends Server
 {
     protected array $tools = [
-        \App\Mcp\Tools\ListFilmsTool::class,
-        \App\Mcp\Tools\GetLocationsForFilmTool::class,
+        ListFilmsTool::class,
+        GetLocationsForFilmTool::class,
     ];
 
     protected array $resources = [

@@ -22,7 +22,7 @@ class SocialController extends Controller
             // 1. Try to find user by social ID
             $user = User::where("{$provider}_id", $socialUser->id)->first();
 
-            if (!$user) {
+            if (! $user) {
                 // 2. Try to find user by email
                 $user = User::where('email', $socialUser->getEmail())->first();
 
@@ -55,11 +55,12 @@ class SocialController extends Controller
 
             return redirect()->intended('/dashboard');
         } catch (\Exception $e) {
-            Log::error("Social Auth Error ({$provider}): " . $e->getMessage(), [
+            Log::error("Social Auth Error ({$provider}): ".$e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
             ]);
-            return redirect('/login')->with('error', 'Authentication failed: ' . $e->getMessage());
+
+            return redirect('/login')->with('error', 'Authentication failed: '.$e->getMessage());
         }
     }
 }

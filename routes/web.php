@@ -13,6 +13,7 @@ use App\Http\Controllers\SubscriptionController;
 Route::get('auth/{provider}', [SocialController::class, 'redirectToProvider'])->name('auth.social');
 Route::get('auth/{provider}/callback', [SocialController::class, 'handleProviderCallback']);
 
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\LocationController;
 
@@ -40,7 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('locations', LocationController::class);
     Route::post('locations/{location}/upvote', [LocationController::class, 'upvote'])->name('locations.upvote');
     // Chatbot
-    Route::post('/chat', \App\Http\Controllers\ChatController::class)->name('chat');
+    Route::post('/chat', ChatController::class)->name('chat');
 });
 
 require __DIR__.'/settings.php';

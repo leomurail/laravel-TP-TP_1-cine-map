@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mcp\Servers\CineMapServer;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -25,15 +26,17 @@ class ChatController extends Controller
         try {
             // 1. Initial call to Gemini with tools description
             $response = $this->callGemini($userMessage, $apiKey, $model);
-            
+
             if ($response->status() === 429) {
-                Log::error('Gemini API Quota Exceeded: ' . $response->body());
+                Log::error('Gemini API Quota Exceeded: '.$response->body());
+
                 return response()->json(['response' => "Désolé, j'ai dépassé mon quota de messages. Veuillez réessayer dans quelques instants ou vérifier votre configuration."]);
             }
             // If it reached here but failed for some other reason not caught by throw() (unlikely with throw())
             if ($response->failed()) {
-                Log::error('Gemini API Error: ' . $response->body());
-                return response()->json(['response' => "Erreur lors de la communication avec Gemini. Vérifiez votre clé API ou réessayez plus tard."]);
+                Log::error('Gemini API Error: '.$response->body());
+
+                return response()->json(['response' => 'Erreur lors de la communication avec Gemini. Vérifiez votre clé API ou réessayez plus tard.']);
             }
 
             $candidate = $response->json('candidates.0');
@@ -55,31 +58,34 @@ class ChatController extends Controller
 
                     // 3. Send tool result back to Gemini for final response
                     $finalResponse = $this->callGeminiWithToolResult(
-                        $userMessage, 
-                        $toolName, 
-                        $toolResult, 
+                        $userMessage,
+                        $toolName,
+                        $toolResult,
                         $apiKey,
                         $model
                     );
 
                     // No need for failed check here if we use throw() below
-                    
+
                     $finalText = $finalResponse->json('candidates.0.content.parts.0.text');
                 }
             }
 
             return response()->json(['response' => $finalText ?: "Je n'ai pas pu générer de réponse."]);
 
-        } catch (\Illuminate\Http\Client\RequestException $e) {
+        } catch (RequestException $e) {
             if ($e->response->status() === 429) {
-                Log::error('Gemini API Quota Exceeded (Exception): ' . $e->response->body());
+                Log::error('Gemini API Quota Exceeded (Exception): '.$e->response->body());
+
                 return response()->json(['response' => "Désolé, j'ai dépassé mon quota de messages Gemini. Veuillez réessayer dans quelques instants ou vérifier votre configuration dans le fichier .env."]);
             }
-            Log::error('Gemini API Request Error: ' . $e->getMessage());
-            return response()->json(['response' => "Erreur de communication avec l'API : " . $e->getMessage()]);
+            Log::error('Gemini API Request Error: '.$e->getMessage());
+
+            return response()->json(['response' => "Erreur de communication avec l'API : ".$e->getMessage()]);
         } catch (\Exception $e) {
-            Log::error('ChatBot Error: ' . $e->getMessage());
-            return response()->json(['response' => "Désolé, j'ai rencontré une difficulté technique. " . $e->getMessage()]);
+            Log::error('ChatBot Error: '.$e->getMessage());
+
+            return response()->json(['response' => "Désolé, j'ai rencontré une difficulté technique. ".$e->getMessage()]);
         }
     }
 
@@ -89,15 +95,15 @@ class ChatController extends Controller
             'contents' => [
                 [
                     'role' => 'user',
-                    'parts' => [['text' => $message]]
-                ]
+                    'parts' => [['text' => $message]],
+                ],
             ],
             'tools' => [
-                ['function_declarations' => $this->getToolsDefinition()]
+                ['function_declarations' => $this->getToolsDefinition()],
             ],
             'tool_config' => [
-                'function_calling_config' => ['mode' => 'AUTO']
-            ]
+                'function_calling_config' => ['mode' => 'AUTO'],
+            ],
         ])->throw();
     }
 
@@ -105,7 +111,7 @@ class ChatController extends Controller
     {
         // Using CineMapServer's testing capability to run tools programmatically
         $response = CineMapServer::tool($name, $arguments);
-        
+
         return $response->getContent();
     }
 
@@ -115,7 +121,7 @@ class ChatController extends Controller
             'contents' => [
                 [
                     'role' => 'user',
-                    'parts' => [['text' => $userMessage]]
+                    'parts' => [['text' => $userMessage]],
                 ],
                 [
                     'role' => 'model',
@@ -123,10 +129,10 @@ class ChatController extends Controller
                         [
                             'functionCall' => [
                                 'name' => $toolName,
-                                'args' => new \stdClass()
-                            ]
-                        ]
-                    ]
+                                'args' => new \stdClass,
+                            ],
+                        ],
+                    ],
                 ],
                 [
                     'role' => 'user',
@@ -134,15 +140,15 @@ class ChatController extends Controller
                         [
                             'functionResponse' => [
                                 'name' => $toolName,
-                                'response' => ['content' => $result]
-                            ]
-                        ]
-                    ]
-                ]
+                                'response' => ['content' => $result],
+                            ],
+                        ],
+                    ],
+                ],
             ],
             'tools' => [
-                ['function_declarations' => $this->getToolsDefinition()]
-            ]
+                ['function_declarations' => $this->getToolsDefinition()],
+            ],
         ])->throw();
     }
 
@@ -154,8 +160,8 @@ class ChatController extends Controller
                 'description' => 'List all films in the CineMap database',
                 'parameters' => [
                     'type' => 'object',
-                    'properties' => (object)[]
-                ]
+                    'properties' => (object) [],
+                ],
             ],
             [
                 'name' => 'get-locations-for-film-tool',
@@ -165,12 +171,12 @@ class ChatController extends Controller
                     'properties' => [
                         'film_id' => [
                             'type' => 'number',
-                            'description' => 'The ID of the film'
-                        ]
+                            'description' => 'The ID of the film',
+                        ],
                     ],
-                    'required' => ['film_id']
-                ]
-            ]
+                    'required' => ['film_id'],
+                ],
+            ],
         ];
     }
 }

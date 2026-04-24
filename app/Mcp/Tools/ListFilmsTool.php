@@ -2,13 +2,14 @@
 
 namespace App\Mcp\Tools;
 
+use App\Models\Film;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 
-    #[Description('List all films in the CineMap database')]
+#[Description('List all films in the CineMap database')]
 class ListFilmsTool extends Tool
 {
     /**
@@ -16,7 +17,7 @@ class ListFilmsTool extends Tool
      */
     public function handle(Request $request): Response
     {
-        $films = \App\Models\Film::select('id', 'title', 'release_year')->get();
+        $films = Film::select('id', 'title', 'release_year')->get();
 
         return Response::text(json_encode($films, JSON_PRETTY_PRINT));
     }
