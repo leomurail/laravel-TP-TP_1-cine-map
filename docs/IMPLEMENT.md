@@ -22,6 +22,7 @@
 - [x] Migration pour `github_id` et `github_token`
 - [x] Créer `SocialController`
 - [x] Ajouter le bouton "Login with GitHub" sur la page de connexion
+**(Socialize package)**
 
 ## Étape 8 - Stripe Subscriptions & JWT API
 - [x] Installer Cashier et JWT Auth
