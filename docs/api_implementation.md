@@ -25,9 +25,7 @@ L'intégration repose sur **Laravel Cashier**.
 ### 3. Le Double Verrou (Middleware)
 Pour protéger la route, nous utilisons un groupe de middlewares dans `routes/api.php` :
 ```php
-Route::middleware(['auth:api', 'subscribed'])->group(function () {
-    Route::get('/films/{film}/locations', [FilmLocationController::class, 'index']);
-});
+Route::middleware(['auth:api', 'subscribed'])->get('/films/{film}/locations', [FilmLocationController::class, 'index']);
 ```
 - **`auth:api` :** Vérifie l'identité via le token JWT.
 - **`subscribed` :** Vérifie le droit d'accès via l'abonnement Stripe.
