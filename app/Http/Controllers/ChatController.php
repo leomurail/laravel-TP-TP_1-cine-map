@@ -112,7 +112,6 @@ class ChatController extends Controller
 
         $reflection = new \ReflectionClass($response);
         $property = $reflection->getProperty('response');
-        $property->setAccessible(true);
         $underlyingResponse = $property->getValue($response);
 
         $data = $underlyingResponse->toArray();
