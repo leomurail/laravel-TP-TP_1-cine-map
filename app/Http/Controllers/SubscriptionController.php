@@ -25,12 +25,14 @@ class SubscriptionController extends Controller
             // return back()->with('error', 'Please configure a valid Stripe Price ID in your controller or .env file.');
         }
 
-        return $request->user()
-            ->newSubscription('default', 'price_premium_api') // Placeholder price ID
+        $checkout = $request->user()
+            ->newSubscription('default', config('cashier.price_id', 'price_premium_api'))
             ->checkout([
                 'success_url' => route('subscription.success'),
                 'cancel_url' => route('subscription.index'),
             ]);
+
+        return Inertia::location($checkout->url);
     }
 
     public function success()
